@@ -1,0 +1,30 @@
+---
+# ----------------------------------------------------------------------------
+- name: Edit host config
+  devopsarr.radarr.radarr_host_config:
+    analytics_enabled: false
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert host config changes
+  ansible.builtin.assert:
+    that:
+      - result.analytics_enabled == false
+# ----------------------------------------------------------------------------
+- name: Test idempotency
+  devopsarr.radarr.radarr_host_config:
+    analytics_enabled: false
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert host config idempotency
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
+      - result.analytics_enabled == false
+# ----------------------------------------------------------------------------
+- name: Restore host config
+  devopsarr.radarr.radarr_host_config:
+    analytics_enabled: true
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
