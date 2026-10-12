@@ -1,0 +1,30 @@
+---
+# ----------------------------------------------------------------------------
+- name: Edit metadata config
+  devopsarr.radarr.radarr_metadata_config:
+    certification_country: fr
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert metadata config changes
+  ansible.builtin.assert:
+    that:
+      - result.certification_country == "fr"
+# ----------------------------------------------------------------------------
+- name: Test idempotency
+  devopsarr.radarr.radarr_metadata_config:
+    certification_country: fr
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert metadata config idempotency
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
+      - result.certification_country == "fr"
+# ----------------------------------------------------------------------------
+- name: Restore metadata config
+  devopsarr.radarr.radarr_metadata_config:
+    certification_country: us
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
