@@ -1,0 +1,33 @@
+---
+- name: Edit qualities
+  devopsarr.radarr.radarr_quality_definitions:
+    quality_definitions:
+      - name: HDTV-2160p
+        title: HDTV-2160p
+        max_size: 200.0
+        min_size: 1.0
+        preferred_size: 95.0
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert qualities changes
+  ansible.builtin.assert:
+    that:
+      - result.changed == true
+      - result.updated == ['HDTV-2160p']
+# ----------------------------------------------------------------------------
+- name: Test idempotency
+  devopsarr.radarr.radarr_quality_definitions:
+    quality_definitions:
+      - name: HDTV-2160p
+        title: HDTV-2160p
+        max_size: 200.0
+        min_size: 1.0
+        preferred_size: 95.0
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert qualities idempotency
+  ansible.builtin.assert:
+    that:
+      - result.changed == false

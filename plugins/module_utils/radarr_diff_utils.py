@@ -79,6 +79,18 @@ def _clean(value, secrets):
     return value
 
 
+def build_diff(before, after, ignore=()):
+    """Return dict(before, after) cleaned like add_diff does, or None when both sides are empty."""
+    old = _dump(before, ignore)
+    new = _dump(after, ignore)
+    if not old and not new:
+        return None
+    secrets = set()
+    _field_names(old, secrets)
+    _field_names(new, secrets)
+    return dict(before=_clean(old, secrets), after=_clean(new, secrets))
+
+
 def add_diff(module, result, before, after, ignore=()):
     """Set result['diff'] when the diff mode is on.
 
@@ -87,11 +99,6 @@ def add_diff(module, result, before, after, ignore=()):
     """
     if not module._diff:
         return
-    old = _dump(before, ignore)
-    new = _dump(after, ignore)
-    if not old and not new:
-        return
-    secrets = set()
-    _field_names(old, secrets)
-    _field_names(new, secrets)
-    result['diff'] = dict(before=_clean(old, secrets), after=_clean(new, secrets))
+    diff = build_diff(before, after, ignore)
+    if diff is not None:
+        result['diff'] = diff
