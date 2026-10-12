@@ -167,7 +167,7 @@ def run_module():
     want = radarr.DownloadClientConfigResource(
         enable_completed_download_handling=module.params['enable_completed_download_handling'],
         auto_redownload_failed=module.params['auto_redownload_failed'],
-        auto_redownload_failed_from_interactive_search=module.params['auto_redownload_failed'],
+        auto_redownload_failed_from_interactive_search=module.params['auto_redownload_failed_from_interactive_search'],
         check_for_finished_download_interval=module.params['check_for_finished_download_interval'],
         download_client_working_folders=working_folders,
         id=1,
