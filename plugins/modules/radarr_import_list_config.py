@@ -128,6 +128,8 @@ def run_module():
     # Update an existing resource.
     if changed:
         update_import_list_config(want, result)
+        if module._diff:
+            result['diff'] = dict(before=helper.view(state), after=helper.view(want))
 
     # Exit whith no changes.
     module.exit_json(**result)
