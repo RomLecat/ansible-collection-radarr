@@ -1,0 +1,30 @@
+---
+# ----------------------------------------------------------------------------
+- name: Edit import list config
+  devopsarr.radarr.radarr_import_list_config:
+    list_sync_level: logOnly
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert import list config changes
+  ansible.builtin.assert:
+    that:
+      - result.list_sync_level == "logOnly"
+# ----------------------------------------------------------------------------
+- name: Test idempotency
+  devopsarr.radarr.radarr_import_list_config:
+    list_sync_level: logOnly
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert import list config idempotency
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
+      - result.list_sync_level == "logOnly"
+# ----------------------------------------------------------------------------
+- name: Restore import list config
+  devopsarr.radarr.radarr_import_list_config:
+    list_sync_level: disabled
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
