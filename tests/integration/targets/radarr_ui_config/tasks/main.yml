@@ -1,0 +1,30 @@
+---
+# ----------------------------------------------------------------------------
+- name: Edit ui config
+  devopsarr.radarr.radarr_ui_config:
+    first_day_of_week: 1
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert ui config changes
+  ansible.builtin.assert:
+    that:
+      - result.first_day_of_week == 1
+# ----------------------------------------------------------------------------
+- name: Test idempotency
+  devopsarr.radarr.radarr_ui_config:
+    first_day_of_week: 1
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
+  register: result
+- name: Assert ui config idempotency
+  ansible.builtin.assert:
+    that:
+      - result.changed == false
+      - result.first_day_of_week == 1
+# ----------------------------------------------------------------------------
+- name: Restore ui config
+  devopsarr.radarr.radarr_ui_config:
+    first_day_of_week: 0
+    radarr_api_key: "{{ radarr_api_key }}"
+    radarr_url: "{{ radarr_url }}"
