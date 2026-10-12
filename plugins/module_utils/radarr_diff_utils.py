@@ -9,20 +9,34 @@ import re
 MASK = '********'
 SECRET_NAME = re.compile(r'apikey|api_key|password|passkey|cookie|token|secret|pid|rsskey|username', re.IGNORECASE)
 SORTED_LISTS = ('fields', 'specifications', 'format_items')
+# computed by the server, never sent (supports_* too)
+SERVER_KEYS = ('info_link', 'implementation_name', 'message', 'presets', 'capabilities', 'privacy', 'added', 'sort_name', 'min_refresh_interval')
+# computed by the server for a movie
+MOVIE_SERVER_KEYS = (
+    'alternate_titles', 'certification', 'clean_title', 'collection', 'digital_release', 'folder_name', 'genres', 'has_file', 'images', 'imdb_id',
+    'in_cinemas', 'is_available', 'keywords', 'last_search_time',
+    'movie_file', 'movie_file_id', 'original_language', 'original_title', 'overview', 'physical_release',
+    'popularity', 'ratings', 'release_date', 'runtime', 'secondary_year_source_id', 'size_on_disk', 'sort_title', 'statistics', 'status', 'studio',
+    'title_slug', 'website', 'year', 'you_tube_trailer_id')
 
 
-def _dump(resource):
+def _dump(resource, ignore=()):
     # model, dict or nothing -> plain dict without empty values
     if resource is None:
         return {}
     if hasattr(resource, 'model_dump'):
         resource = resource.model_dump(by_alias=False, mode='json')
+    if isinstance(resource, dict):
+        resource = dict((key, item) for key, item in resource.items() if key not in ignore)
     return _drop_none(resource)
 
 
 def _drop_none(value):
     if isinstance(value, dict):
-        return dict((key, _drop_none(item)) for key, item in value.items() if item is not None)
+        return dict(
+            (key, _drop_none(item)) for key, item in value.items()
+            if item is not None and key not in SERVER_KEYS and not key.startswith('supports_')
+        )
     if isinstance(value, list):
         return [_drop_none(item) for item in value]
     return value
@@ -30,19 +44,6 @@ def _drop_none(value):
 
 def _named(items):
     return bool(items) and all(isinstance(item, dict) and 'name' in item for item in items)
-
-
-def _restrict(before, after):
-    # Keep of the current resource only what the wanted one sets: the compared document.
-    if isinstance(before, dict) and isinstance(after, dict):
-        return dict((key, _restrict(before[key], value)) for key, value in after.items() if key in before)
-    if isinstance(before, list) and isinstance(after, list):
-        if _named(before) and _named(after):
-            by_name = dict((item['name'], item) for item in before)
-            return [_restrict(by_name[item['name']], item) for item in after if item['name'] in by_name]
-        if len(before) == len(after):
-            return [_restrict(old, new) for old, new in zip(before, after)]
-    return before
 
 
 def _field_names(value, secrets):
@@ -78,19 +79,18 @@ def _clean(value, secrets):
     return value
 
 
-def add_diff(module, result, before, after):
+def add_diff(module, result, before, after, ignore=()):
     """Set result['diff'] when the diff mode is on.
 
-    before and after are models, dicts or None. Nothing sent to the API depends on this.
+    before is the live resource and after the exact resource sent, as models, dicts or None. Server computed keys
+    are dropped on both sides, and the top level keys of ignore too. Nothing sent to the API depends on this.
     """
     if not module._diff:
         return
-    old = _dump(before)
-    new = _dump(after)
+    old = _dump(before, ignore)
+    new = _dump(after, ignore)
     if not old and not new:
         return
-    if old and new:
-        old = _restrict(old, new)
     secrets = set()
     _field_names(old, secrets)
     _field_names(new, secrets)
