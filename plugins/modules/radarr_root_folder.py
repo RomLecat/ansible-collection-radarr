@@ -69,6 +69,7 @@ unmapped_folders:
 '''
 
 from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_module import RadarrModule
+from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_diff_utils import add_diff
 from ansible.module_utils.common.text.converters import to_native
 
 try:
@@ -154,10 +155,12 @@ def run_module():
 
     # Delete the resource if needed.
     if module.params['state'] == 'absent':
+        add_diff(module, result, state, None)
         delete_root_folder(result)
 
     # Create a new resource.
     if result['id'] == 0:
+        add_diff(module, result, None, {'path': module.params['path']})
         create_root_folder({'path': module.params['path']}, result)
 
     # No need for update

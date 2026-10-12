@@ -150,6 +150,7 @@ fields:
 '''
 
 from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_module import RadarrModule
+from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_diff_utils import add_diff
 from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_field_utils import FieldHelper
 from ansible.module_utils.common.text.converters import to_native
 
@@ -285,6 +286,7 @@ def run_module():
 
     # Delete the resource if needed.
     if module.params['state'] == 'absent':
+        add_diff(module, result, state, None)
         delete_indexer(result)
 
     # Set wanted resource.
@@ -304,11 +306,13 @@ def run_module():
 
     # Create a new resource, if needed.
     if result['id'] == 0:
+        add_diff(module, result, None, want)
         create_indexer(want, result)
 
     # Update an existing resource.
     want.id = result['id']
     if is_changed(state, want) or module.params['update_secrets']:
+        add_diff(module, result, state, want)
         update_indexer(want, result)
 
     # Exit whith no changes.

@@ -253,6 +253,7 @@ paths_default_static:
 '''
 
 from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_module import RadarrModule
+from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_diff_utils import add_diff
 from ansible.module_utils.common.text.converters import to_native
 
 try:
@@ -361,6 +362,7 @@ def run_module():
 
     # Update an existing resource.
     if want != state:
+        add_diff(module, result, state, want)
         update_media_management(want, result)
 
     # Exit whith no changes.

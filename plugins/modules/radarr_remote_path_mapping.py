@@ -82,6 +82,7 @@ local_path:
 '''
 
 from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_module import RadarrModule
+from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_diff_utils import add_diff
 from ansible.module_utils.common.text.converters import to_native
 
 try:
@@ -185,6 +186,7 @@ def run_module():
 
     # Delete the resource if needed.
     if module.params['state'] == 'absent':
+        add_diff(module, result, state, None)
         delete_remote_path_mapping(result)
 
     # Set wanted resource.
@@ -196,6 +198,7 @@ def run_module():
 
     # Create a new resource if needed.
     if result['id'] == 0:
+        add_diff(module, result, None, want)
         create_remote_path_mapping(want, result)
 
     # No need for update

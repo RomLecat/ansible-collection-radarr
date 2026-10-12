@@ -88,6 +88,7 @@ quality:
 '''
 
 from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_module import RadarrModule
+from ansible_collections.devopsarr.radarr.plugins.module_utils.radarr_diff_utils import add_diff
 from ansible.module_utils.common.text.converters import to_native
 
 try:
@@ -173,6 +174,7 @@ def run_module():
     want.weight = result['weight']
     want.quality = radarr.Quality(**result['quality'])
     if want != state:
+        add_diff(module, result, state, want)
         update_quality(want, result)
 
     # Exit whith no changes.
